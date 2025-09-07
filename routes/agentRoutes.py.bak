@@ -148,6 +148,9 @@ async def chat(request: Request, query: Optional[str] = None) -> Union[HTMLRespo
     Returns:
         HTML response with documentation or JSON response with answer
     """
+    """
+    API endpoint to handle user investment-related questions and return AI-generated insights.
+    """
     # Check if request is from a browser or format is explicitly set to html
     accept_header = request.headers.get("accept", "")
     if "text/html" in accept_header:
