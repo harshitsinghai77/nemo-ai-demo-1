@@ -2,7 +2,7 @@ import os
 import datetime
 import json
 import requests
-from fastapi import FastAPI, APIRouter, Request, Query
+from fastapi import FastAPI, APIRouter, Request, Query, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from agno.agent import RunResponse, Agent
@@ -10,12 +10,18 @@ from agno.models.nebius import Nebius
 from controllers.agents import multi_ai
 import dotenv
 from controllers.ask import chat_agent
+from typing import Optional, Dict, Union, Tuple
+from utils.calculator_utils import CalculatorUtils
+from utils.base_calculator import handle_calculator_request
 
 router = APIRouter()
 
 dotenv.load_dotenv()
 NEBIUS_API_KEY = os.getenv("NEBIUS_API_KEY")
 templates = Jinja2Templates(directory="templates")
+
+
+
 
 @router.get("/health", response_class=HTMLResponse)
 async def health_check(request: Request):
@@ -131,6 +137,50 @@ def chat(request: Request, query: str = None):
     
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
+
+@router.get("/calc/sum", response_class=HTMLResponse)
+async def calculate_sum(request: Request, num1: Optional[str] = None, num2: Optional[str] = None):
+    """
+    API endpoint to calculate the sum of two numbers provided as query parameters.
+    
+    Args:
+        request: The FastAPI request object
+        num1: First number as a string
+        num2: Second number as a string
+        
+    Returns:
+        JSONResponse with num1, num2, and their sum as total
+        HTMLResponse for browser requests with documentation
+    """
+    return await handle_calculator_request(
+        request=request,
+        route_path="/calc/sum",
+        operation_name="Calculate the sum of",
+        num1=num1,
+        num2=num2
+    )
+
+@router.get("/calc/add", response_class=HTMLResponse)
+async def calculate_add(request: Request, num1: Optional[str] = None, num2: Optional[str] = None):
+    """
+    API endpoint to add two numbers from query parameters and return JSON with the numbers and their sum.
+    
+    Args:
+        request: The FastAPI request object
+        num1: First number as a string
+        num2: Second number as a string
+        
+    Returns:
+        JSONResponse with num1, num2, and their sum as total
+        HTMLResponse for browser requests with documentation
+    """
+    return await handle_calculator_request(
+        request=request,
+        route_path="/calc/add",
+        operation_name="Add",
+        num1=num1,
+        num2=num2
+    )
 
 @router.get("/agent", response_class=HTMLResponse)
 def ask(request: Request, query: str = None):
