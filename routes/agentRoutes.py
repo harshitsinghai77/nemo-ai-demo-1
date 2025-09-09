@@ -32,6 +32,7 @@ async def health_check(request: Request):
             "services": {
                 "chat": router.url_path_for("chat"),
                 "agent": router.url_path_for("ask"),
+                "hello-world": router.url_path_for("hello_world"),
             },
         }
 
@@ -131,6 +132,66 @@ def chat(request: Request, query: str = None):
     
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
+
+@router.get("/hello-world", response_class=HTMLResponse)
+def hello_world(request: Request, name: str = None) -> HTMLResponse | JSONResponse:
+    """
+    API endpoint that returns a personalized greeting based on the provided name.
+    
+    Args:
+        request (Request): The FastAPI request object
+        name (str, optional): Name to personalize the greeting. Defaults to None.
+        
+    Returns:
+        HTMLResponse | JSONResponse: HTML template response for browser requests or JSON for API requests
+    """
+    # Define constants for message templates
+    DEFAULT_GREETING = "Hello World"
+    PERSONALIZED_GREETING = "Hello {name}"
+    
+    # Create response data using more Pythonic approach
+    message = PERSONALIZED_GREETING.format(name=name) if name else DEFAULT_GREETING
+    response_data = {"message": message}
+
+    # Check if request is from a browser or format is explicitly set to html
+    accept_header = request.headers.get("accept", "")
+    if "text/html" in accept_header:
+        return _generate_hello_world_html_response(request, response_data)
+    
+    # Handle regular API calls
+    return JSONResponse(content=response_data)
+
+
+def _generate_hello_world_html_response(request: Request, response_data: dict) -> HTMLResponse:
+    """
+    Generate HTML response for the hello-world endpoint.
+    
+    Args:
+        request (Request): The FastAPI request object
+        response_data (dict): The response data to be displayed
+        
+    Returns:
+        HTMLResponse: HTML template response
+    """
+    current_year = datetime.datetime.now().year
+    example_response = {"message": "Hello Alice"}
+    
+    return templates.TemplateResponse(
+        "route.html",
+        {
+            "request": request,
+            "route_path": "/hello-world",
+            "method": "GET",
+            "full_path": str(request.url).split("?")[0],
+            "description": "Hello World endpoint that returns a personalized greeting based on the provided name.",
+            "parameters": [
+                {"name": "name", "type": "string", "description": "Name to personalize the greeting (optional)"}
+            ],
+            "example_query": "?name=Alice",
+            "example_response": json.dumps(example_response, indent=2),
+            "current_year": current_year
+        }
+    )
 
 @router.get("/agent", response_class=HTMLResponse)
 def ask(request: Request, query: str = None):
