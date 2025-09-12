@@ -66,6 +66,14 @@ The API documentation is available at the following URL:
 ```bash
 http://localhost:8000/docs
 ```
+
+### Available Endpoints
+
+#### General Endpoints
+- **GET /hello-world**: Returns a personalized greeting
+  - Optional query parameter: `name` (string)
+  - Example: `GET /hello-world?name=Alice` returns `{"message": "Hello Alice"}`
+  - If name is not provided, returns `{"message": "Hello World"}`
 ### Environment Variables
 The following environment variables are required to run the server:
 

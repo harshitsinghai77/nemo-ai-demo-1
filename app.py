@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils.redisCache import lifespan, get_cache
 from routes.stockRoutes import router as stock_router
 from routes.agentRoutes import router as agent_router
+from routes.generalRoutes import router as general_router
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
@@ -15,3 +16,4 @@ app.add_middleware(
 
 app.include_router(stock_router)
 app.include_router(agent_router)
+app.include_router(general_router)
