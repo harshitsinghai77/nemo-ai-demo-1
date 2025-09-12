@@ -10,6 +10,7 @@ from agno.models.nebius import Nebius
 from controllers.agents import multi_ai
 import dotenv
 from controllers.ask import chat_agent
+from typing import Optional, Union, Dict
 
 router = APIRouter()
 
@@ -176,3 +177,58 @@ def ask(request: Request, query: str = None):
     
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
+
+@router.get("/hello-world", response_class=HTMLResponse)
+def hello_world(request: Request, name: str = None):
+    """
+    API endpoint that returns a personalized greeting based on the name query parameter.
+    If no name is provided, returns a default 'Hello World' greeting.
+    This endpoint does not require authentication.
+    
+    Returns:
+        Union[JSONResponse, TemplateResponse]: JSON or HTML response based on request headers
+    """
+    # Generate the response message
+    response_data = generate_greeting_message(name)
+    
+    # Check if request is from a browser using a more Pythonic approach
+    accept_header = request.headers.get("accept", "")
+    if any("text/html" in header for header in accept_header.split(",")):
+        current_year = datetime.datetime.now().year
+        example_response = {
+            "message": "Hello Alice"
+        }
+        
+        return templates.TemplateResponse(
+            "route.html",
+            {
+                "request": request,
+                "route_path": "/hello-world",
+                "method": "GET",
+                "full_path": str(request.url).split("?")[0],
+                "description": "Returns a personalized greeting based on the name query parameter.",
+                "parameters": [
+                    {"name": "name", "type": "string", "description": "Name to personalize the greeting (optional)"}
+                ],
+                "example_query": "?name=Alice",
+                "example_response": json.dumps(example_response, indent=2),
+                "current_year": current_year
+            }
+        )
+    
+    # Return JSON response
+    return JSONResponse(content=response_data)
+
+def generate_greeting_message(name: str = None) -> dict:
+    """
+    Generate a greeting message based on the provided name.
+    
+    Args:
+        name: The name to include in the greeting, or None for default greeting
+        
+    Returns:
+        dict: A dictionary containing the greeting message
+    """
+    default_greeting = "World"
+    message = f"Hello {name or default_greeting}"
+    return {"message": message}
